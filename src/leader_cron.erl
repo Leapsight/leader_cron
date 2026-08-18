@@ -334,7 +334,7 @@ from_leader({add_task, {Name, Task}}, State, _Election) ->
     State1 = save_tasks(State, Tasks#{Name => Task}),
     {ok, State1};
 
-from_leader({remove_task, {Name, Task}}, State, _Election) ->
+from_leader({remove_task, {Name, _Task}}, State, _Election) ->
     Tasks = State#state.tasks,
     Tasks1 = maps:remove(Name, Tasks),
     State1 = save_tasks(State, Tasks1),
@@ -390,7 +390,7 @@ send_add_task(Task, Election) ->
 	[] ->
 	    ok;
 	Alive ->
-	    Election = gen_leader:broadcast({from_leader, {add_task, Task}},
+	    _Election1 = gen_leader:broadcast({from_leader, {add_task, Task}},
 					    Alive,
 					    Election),
 	    ok
@@ -405,7 +405,7 @@ send_remove_task(Task, Election) ->
 	[] ->
 	    ok;
 	Alive ->
-	    Election = gen_leader:broadcast({from_leader, {remove_task, Task}},
+	    _Election1 = gen_leader:broadcast({from_leader, {remove_task, Task}},
 					    Alive,
 					    Election),
 	    ok
@@ -434,7 +434,7 @@ start_tasks(State) ->
                         {error, Reason} ->
                             Format = "Could not start task ~p ~p, name: ~p",
                             Message = io_lib:format(Format, [Exec, Reason, Name]),
-                            error_logger:error_report(Message),
+                            logger:error("~ts", [Message]),
                             Acc#{Name => {undefined, Schedule, Exec}}
                     end
 	     end, #{}, Tasks),

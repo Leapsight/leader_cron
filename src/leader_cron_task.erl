@@ -321,7 +321,7 @@ oneshot({oneshot, DateTime}, Exec, ParentPid) ->
 	false ->
 	    Format = "Schedule datetime ~p is in the past",
 	    Message = lists:flatten(io_lib:format(Format, [DateTime])),
-	    error_logger:error_report(Message),
+	    logger:error("~ts", [Message]),
 	    gen_server:cast(ParentPid, {error, Message})
     end.
 
@@ -352,13 +352,12 @@ apply_task(Exec) ->
                 apply(F, A)
         end
     catch
-	Error:Reason ->
-	    Stacktrace = erlang:get_stacktrace(),
+	Class:Reason:Stacktrace ->
 	    Format = "Task ~p in process ~p with value:~n~p",
 	    Message = lists:flatten(io_lib:format(
 				      Format,
-				      [Error, self(), {Reason, Stacktrace}])),
-	    error_logger:error_report(Message)
+				      [Class, self(), {Reason, Stacktrace}])),
+	    logger:error("~ts", [Message])
     end.
 
 -spec time_to_wait_millis(datetime(), datetime()) -> integer().
